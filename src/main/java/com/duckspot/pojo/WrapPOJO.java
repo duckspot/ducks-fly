@@ -6,7 +6,9 @@ package com.duckspot.pojo;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Set;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONObject;
 
 /**
@@ -71,8 +73,11 @@ public class WrapPOJO extends Wrapper {
     }        
     
     private static String value(Object o) {
-        if (o instanceof String) {
-            return "\""+o.toString()+"\"";
+        if (o == null) {
+            return "null";
+        } 
+        else if (o instanceof String) {            
+            return "\""+StringEscapeUtils.escapeJava((String)o)+"\"";
         }
         return o.toString();
     }
@@ -81,9 +86,12 @@ public class WrapPOJO extends Wrapper {
     public String toString() {
         
         StringBuilder sb = new StringBuilder();
-        sb.append("{ class: ");
+        sb.append("WrapPOJO { class: ");
         sb.append(object.getClass().getSimpleName());
-        for (String key: keySet()) {
+        Object[] keys = keySet().toArray();
+        Arrays.sort(keys);
+        for (int i=0; i<keys.length; i++) {
+            String key = (String)keys[i];
             if (!key.equals("class")) {
                 sb.append(", ").append(key)
                   .append(": ").append(value(get(key)));
