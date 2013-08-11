@@ -31,7 +31,7 @@ public class Day extends ChangeProducer implements ChangeListener {
         return date.equals(settings.getDtUtil().getToday());
     }
     
-    public Item newItem() {
+    public Item newItem() {        
         Item item = new Item(settings);
         addItem(item);
         return item;
@@ -64,10 +64,11 @@ public class Day extends ChangeProducer implements ChangeListener {
         return (int)nowMinute;
     }
     
-    public int nextTime() {
+    public int nextTime(int index) {
         int result = settings.getDayStartMinute();
-        if (items.size() > 0) {
-            result = getLastItem().nextTime();
+        if (index >= 0) {            
+            Item item = getItem(index);
+            return item.nextTime();
         }
         if (isToday() && result < nowMinute()) {
             result = nowMinute();
@@ -75,11 +76,15 @@ public class Day extends ChangeProducer implements ChangeListener {
         return result;
     }
     
+    public int nextTime() {        
+        return nextTime(getCount() - 1);
+    }
+    
     public synchronized int getCount() {
         return items.size();
     }
     
-    public synchronized Item getItem(int index) {
+    public synchronized Item getItem(int index) {        
         return items.get(index);
     }
     
@@ -100,7 +105,34 @@ public class Day extends ChangeProducer implements ChangeListener {
         fireStateChanged();
         return result;
     }
-
+    
+    /**
+     * Item may need to have it's duration lengthened if it's the currently 
+     * active item.
+     * 
+     * @param index 
+     */
+    void fixupItem(int index) {
+        if (index < 0) {
+            return;
+        }
+        // if there is an item after
+        if (index+1 < getCount()) {
+            // we may need to lengthen the duration of item
+            Item item = getItem(index);
+            Item itemAfter = getItem(index+1);
+            if (item.isBeginSet() && !itemAfter.isBeginSet()) {
+                // TODO: should we limit this to isToday()?
+                int minutes = itemAfter.getBeginMinute() 
+                            - item.getBeginMinute();
+                // we only lengthen durations ... not shorten them
+                if (minutes > item.getDurationMinutes()) {
+                    item.setDurationMinutes(minutes);
+                }
+            }
+        }
+    }
+    
     @Override
     public void stateChanged(ChangeEvent e) {
                 

@@ -1,6 +1,7 @@
 package com.duckspot.fly.model;
 
 import com.duckspot.pojo.POJO;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -125,7 +126,7 @@ public class Item extends ChangeProducer {
      * @param beginMinute the beginMinute to set
      */
     public void setBeginMinute(int beginMinute) {
-        this.beginMinute = beginMinute;
+        this.beginMinute = beginMinute;        
     }
 
     /**

@@ -71,9 +71,10 @@ public class DayDAO {
         try {
             fileReader = new FileReader(file);
             JSONTokener jt = new JSONTokener(fileReader);
-            JSONArray jsonItems = (JSONArray)jt.nextValue();
+            JSONArray jsonItems = (JSONArray)jt.nextValue();            
             for (int i=0; i<jsonItems.length(); i++) {
-                POJO.copy(day.newItem(), (JSONObject)jsonItems.get(i));                
+                POJO.copy(day.newItem(), (JSONObject)jsonItems.get(i));
+                day.fixupItem(i-1); // sometimes adjust duration of item before
             }
         } catch (FileNotFoundException ex) {
             throw new Error("unexpected exception", ex);
