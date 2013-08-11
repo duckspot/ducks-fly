@@ -4,13 +4,17 @@ import com.duckspot.fly.swing.DayTableModel;
 import com.duckspot.fly.model.Day;
 import com.duckspot.fly.model.FlyModel;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
+import javax.swing.Timer;
 import javax.swing.table.TableModel;
 
 /**
@@ -18,14 +22,18 @@ import javax.swing.table.TableModel;
  * 
  * @author Peter Dobson <pdobson@softwarehelps.com>
  */
-public class MainWindow extends javax.swing.JFrame {
+public class MainWindow extends JFrame implements ActionListener {
 
     // TODO: add EditMenu: StartMenuItem
     // TODO: add EditMenu: StartAfterLastMenuItem
-    // TODO: add clock
     // TODO: bold start time if it's fixed
  
-    static DateFormat dayLabelFormat = new SimpleDateFormat("EEEE, M/dd/yyyy");
+    static DateFormat clockLabelFormat 
+            = new SimpleDateFormat("hh:mm:ss a - EEE M/d/yyyy");
+    static DateFormat dayLabelFormat 
+            = new SimpleDateFormat("EEEE, M/d/yyyy");
+    
+    Timer clockTimer;
     
     FlyModel model = new FlyModel();
     Day day = model.getDay();
@@ -42,7 +50,11 @@ public class MainWindow extends javax.swing.JFrame {
         setTableShortcuts();
         
         setDayLabel();
-        setDayInfo();        
+        setDayInfo();
+        
+        clockTimer = new Timer(1000, this);
+        clockTimer.start();
+        updateClock();
     }
 
     /**
@@ -133,6 +145,16 @@ public class MainWindow extends javax.swing.JFrame {
         itemDefinitionDialog.setVisible(true);
     }
     
+    private void updateClock() {
+        clockLabel.setText(clockLabelFormat.format(new Date()));
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {        
+        if (e.getSource() == clockTimer) {
+            updateClock();
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -144,8 +166,9 @@ public class MainWindow extends javax.swing.JFrame {
 
         jInternalFrame1 = new javax.swing.JInternalFrame();
         jToolBar1 = new javax.swing.JToolBar();
-        dayFrame = new javax.swing.JInternalFrame();
-        jPanel1 = new javax.swing.JPanel();
+        clockPanel = new javax.swing.JPanel();
+        clockLabel = new javax.swing.JLabel();
+        headerPanel = new javax.swing.JPanel();
         dayLabel = new javax.swing.JLabel();
         dayInfoLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -174,38 +197,42 @@ public class MainWindow extends javax.swing.JFrame {
 
         jToolBar1.setRollover(true);
 
-        dayFrame.setVisible(true);
-        dayFrame.getContentPane().setLayout(new javax.swing.BoxLayout(dayFrame.getContentPane(), javax.swing.BoxLayout.LINE_AXIS));
+        clockLabel.setText("jLabel1");
+
+        javax.swing.GroupLayout clockPanelLayout = new javax.swing.GroupLayout(clockPanel);
+        clockPanel.setLayout(clockPanelLayout);
+        clockPanelLayout.setHorizontalGroup(
+            clockPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(clockLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        clockPanelLayout.setVerticalGroup(
+            clockPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(clockLabel)
+        );
 
         dayLabel.setFont(new java.awt.Font("Times New Roman", 2, 24)); // NOI18N
         dayLabel.setText("Wednesday 12/31/2013");
 
         dayInfoLabel.setText("***** 1/5 undone (1:50) 11% full; 5:38 free; 0:00 conflicting");
 
-        pItemTable.setModel(tableModel);
-        jScrollPane1.setViewportView(pItemTable);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
+        headerPanel.setLayout(headerPanelLayout);
+        headerPanelLayout.setHorizontalGroup(
+            headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(headerPanelLayout.createSequentialGroup()
                 .addComponent(dayLabel)
                 .addGap(18, 18, 18)
-                .addComponent(dayInfoLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE))
-            .addComponent(jScrollPane1)
+                .addComponent(dayInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 371, Short.MAX_VALUE))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(dayLabel)
-                    .addComponent(dayInfoLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))
+        headerPanelLayout.setVerticalGroup(
+            headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(dayLabel)
+                .addComponent(dayInfoLabel))
         );
 
-        dayFrame.getContentPane().add(jPanel1);
+        pItemTable.setModel(tableModel);
+        jScrollPane1.setViewportView(pItemTable);
 
         fileMenu.setMnemonic('F');
         fileMenu.setText("File");
@@ -247,16 +274,33 @@ public class MainWindow extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addComponent(dayFrame)
+                .addGap(0, 515, Short.MAX_VALUE))
+            .addComponent(clockPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(headerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(6, 6, 6)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 603, Short.MAX_VALUE)
+                    .addGap(6, 6, 6)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(dayFrame, javax.swing.GroupLayout.PREFERRED_SIZE, 331, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(clockPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(328, Short.MAX_VALUE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(64, Short.MAX_VALUE)
+                    .addComponent(headerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(281, 281, 281)))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(119, 119, 119)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(50, Short.MAX_VALUE)))
         );
 
         pack();
@@ -299,23 +343,25 @@ public class MainWindow extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                new MainWindow().setVisible(true);
+                new MainWindow().setVisible(true);                
             }
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JInternalFrame dayFrame;
+    private javax.swing.JLabel clockLabel;
+    private javax.swing.JPanel clockPanel;
     private javax.swing.JLabel dayInfoLabel;
     private javax.swing.JLabel dayLabel;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JPanel headerPanel;
     private javax.swing.JMenuItem insertGeneralItemMenuItem;
     private javax.swing.JMenu insertMenu;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JTable pItemTable;
