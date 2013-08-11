@@ -249,7 +249,8 @@ public class WrapPOJOTest {
     @Test
     public void testToString() {
         System.out.println("toString");
-        String expResult = "{ class: TestClass, b: false, a: 1, URL: \"http://duckspot.com\" }";
+        String expResult = "WrapPOJO { class: TestClass, "
+                + "URL: \"http://duckspot.com\", a: 1, b: false }";
         String result = instance.toString();
         assertEquals(expResult, result);
     }
